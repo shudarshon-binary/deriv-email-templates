@@ -1,19 +1,13 @@
-orbs:
-  docker: circleci/docker@0.5.13
-  k8s: circleci/kubernetes@0.7.0
+# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-jobs:
-  build:
-    machine: true
-    steps:
-      - checkout
-      - docker/build:
-          image: ${DOCKHUB_ORGANISATION}/deriv-email-templates
-      - docker/check
-      - docker/push:
-          image: ${DOCKHUB_ORGANISATION}/deriv-email-templates
-      - k8s/install-kubectl
-      - run:
-          command: |
-            echo $CA_CRT | base64 --decode > ca.crt
-            kubectl --server=${KUBE_SERVER} --certificate-authority=ca.crt --token=$SERVICEACCOUNT_TOKEN set image deployment/static-deriv-app static-deriv-app-container=${DOCKHUB_ORGANISATION}/deriv-email-templates:${CIRCLE_SHA1}
+# Use a package of configuration called an orb.
+orbs:
+  # Declare a dependency on the welcome-orb
+  welcome: circleci/welcome-orb@0.4.1
+# Orchestrate or schedule a set of jobs
+workflows:
+  # Name the workflow "welcome"
+  welcome:
+    # Run the welcome/run job in its own container
+    jobs:
+      - welcome/run
